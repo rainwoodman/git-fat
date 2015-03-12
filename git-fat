@@ -78,6 +78,17 @@ try:
                         os.remove(localfile)
                         raise
 
+        def publish(self,files):
+            bkt = self.get_bucket()
+            for file, realname in files:
+                localfile = os.path.abspath(os.path.join(self.objdir,file))
+                self.verbose('Getting object %s from s3 bucket %s' % (file,self.bucket))
+                k = Key(bkt)
+                k.key = file
+                k.make_public()
+                url = k.generate_url(0, query_auth=False)
+                print('%s => %s' % (realname, url))
+
         def push(self,files):
             bkt = self.get_bucket()
             for file in files:
@@ -518,6 +529,22 @@ class GitFat(object):
         self.backend.pull(files)
         self.checkout()
 
+    def cmd_publish(self, args):
+        'query the public URLs for files'
+        self.setup()
+        files = []
+        for arg in args:
+            if arg.startswith('-'):
+                continue
+            if os.path.exists(arg):
+                mode, blobsha1, stageno, filename = \
+                    subprocess.check_output(['git', 'ls-files', '-s', arg]).split()
+                stub = subprocess.check_output(['git', 'cat-file', 'blob', blobsha1]).splitlines()
+                digest, bytecount = self.decode(stub[0])
+                files.append((digest, arg))
+                
+        self.backend.publish(files)
+
     def parse_pull_patterns(self, args):
         if '--' not in args:
             return ['']
@@ -677,5 +704,7 @@ if __name__ == '__main__':
         fat.cmd_find(sys.argv[2:])
     elif cmd == 'index-filter':
         fat.cmd_index_filter(sys.argv[2:])
+    elif cmd == 'publish':
+        fat.cmd_publish(sys.argv[2:])
     else:
-        print('Usage: git fat [init|status|push|pull|gc|checkout|find|index-filter]', file=sys.stderr)
+        print('Usage: git fat [init|status|push|pull|gc|checkout|find|index-filter|publish]', file=sys.stderr)
