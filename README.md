@@ -31,18 +31,12 @@ Run `git fat init` to activate the extension. Now add and commit as usual.
 Matched files will be transparently stored externally, but will appear
 complete in the working tree.
 
-### rsync remote
+## rsync remote
 
 Set a remote store for the fat objects by editing `.gitfat`.
 
     [rsync]
     remote = your.remote-host.org:/share/fat-store
-
-This file should typically be distributed to other users of the repository.
-For the rsync backend, no identification information is stored, and .gitfat
-can be committed to the repository so that others
-will automatically have their remote set. This remote address can use
-any protocol supported by rsync. 
 
 Most users will configure it to use remote ssh in a directory with shared 
 access. To do this, set the `sshuser` and `sshport` variables in `.gitfat` 
@@ -65,9 +59,19 @@ Edit your .gitfat file and add the following:
 
 And then you're done. 
 
-Warning: If the repository is hosted publicly, do not add .gitfat into the repository.
+This file should typically be distributed to other users of the repository.
+
+## Distributing .gitfat
+
+For the rsync backend, no identification information is stored, and .gitfat
+can be committed to the repository so that others
+will automatically have their remote set. This remote address can use
+any protocol supported by rsync. 
+
+For the S3 backend, it is more complicated. 
+If the repository is (or will ever be) hosted publicly, do not commit .gitfat into the repository.
 Doing so will expose your S3 identity to the world, and anybody can modify the files
-hosted on your S3, thus tainting the version history.
+hosted on the S3 bucket. Distribute the file via a secure channel instead. 
 
 # A worked example
 
