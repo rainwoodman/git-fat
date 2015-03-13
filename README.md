@@ -59,10 +59,9 @@ Edit your .gitfat file and add the following:
 
 And then you're done. 
 
-This file should typically be distributed to other users of the repository.
-
 ## Distributing .gitfat
 
+This file (.gitfat) should typically be distributed to other users of the repository.
 For the rsync backend, no identification information is stored, and .gitfat
 can be committed to the repository so that others
 will automatically have their remote set. This remote address can use
@@ -92,7 +91,7 @@ First, we create a repository and configure it for use with `git-fat`.
     remote = localhost:/tmp/fat-store
     $ mkdir -p /tmp/fat-store               # make sure the remote directory exists
     $ echo '*.gz filter=fat -crlf' > .gitattributes
-    $ git add .gitfat .gitattributes
+    $ git add .gitfat .gitattributes        # do not add .gitfat if S3 backend is used.
     $ git commit -m'Initial repository'
     [master (root-commit) eb7facb] Initial repository
      2 files changed, 3 insertions(+)
