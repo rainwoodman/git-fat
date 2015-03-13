@@ -78,7 +78,7 @@ try:
                         os.remove(localfile)
                         raise
 
-        def publish(self,files):
+        def locate_public_url(self,files):
             bkt = self.get_bucket()
             for file, realname in files:
                 localfile = os.path.abspath(os.path.join(self.objdir,file))
@@ -529,10 +529,12 @@ class GitFat(object):
         self.backend.pull(files)
         self.checkout()
 
-    def cmd_publish(self, args):
-        'query the public URLs for files'
+    def cmd_locate(self, args):
+        'locate the blob objects for files given in the command line; publish the blob if -p is given'
         self.setup()
         files = []
+        publish = '-p' in args
+            
         for arg in args:
             if arg.startswith('-'):
                 continue
@@ -542,8 +544,11 @@ class GitFat(object):
                 stub = subprocess.check_output(['git', 'cat-file', 'blob', blobsha1]).splitlines()
                 digest, bytecount = self.decode(stub[0])
                 files.append((digest, arg))
-                
-        self.backend.publish(files)
+        if not publish:
+            for file, realname in files:
+                print('%s => %s' % (realname, file))
+        else:
+            self.backend.locate_public_url(files)
 
     def parse_pull_patterns(self, args):
         if '--' not in args:
@@ -704,7 +709,7 @@ if __name__ == '__main__':
         fat.cmd_find(sys.argv[2:])
     elif cmd == 'index-filter':
         fat.cmd_index_filter(sys.argv[2:])
-    elif cmd == 'publish':
-        fat.cmd_publish(sys.argv[2:])
+    elif cmd == 'locate':
+        fat.cmd_locate(sys.argv[2:])
     else:
         print('Usage: git fat [init|status|push|pull|gc|checkout|find|index-filter|publish]', file=sys.stderr)
